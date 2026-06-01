@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: fineract-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=fineract
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - fineract-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "postgres", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  fineract:
+    image: apache/fineract:latest
+    container_name: fineract-backend
+    ports:
+      - "8080:8443"
+      - "8443:8443"
+    environment:
+      - FINERACT_HIKARI_DRIVER_SOURCE_CLASS_NAME=org.postgresql.Driver
+      - FINERACT_HIKARI_JDBC_URL=jdbc:postgresql://db:5432/fineract_tenants
+      - FINERACT_HIKARI_USERNAME=postgres
+      - FINERACT_HIKARI_PASSWORD=fineract
+      - FINERACT_DEFAULT_TENANTDB_HOSTNAME=db
+      - FINERACT_DEFAULT_TENANTDB_PORT=5432
+      - FINERACT_DEFAULT_TENANTDB_UID=postgres
+      - FINERACT_DEFAULT_TENANTDB_PWD=fineract
+      - FINERACT_DEFAULT_TENANTDB_NAME=fineract_default
+      - SPRING_PROFILES_ACTIVE=test,diagnostics
+      - FINERACT_SERVER_SSL_ENABLED=false
+      - JAVA_TOOL_OPTIONS=-Xmx1G -XX:+UseContainerSupport
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+volumes:
+  fineract-db-data:
