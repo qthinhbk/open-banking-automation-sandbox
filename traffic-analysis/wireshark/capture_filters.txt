@@ -1,0 +1,72 @@
+# Wireshark Filters for Fineract Open Banking Audit
+
+Use these filters in Wireshark to isolate API and mock server traffic.
+
+## 1. Display Filters (Dùng để lọc gói tin đã bắt)
+
+*   **Lọc mọi HTTP traffic đến cổng của Mock Server (8000) hoặc Fineract Docker (8080):**
+    `http.port == 8000 || http.port == 8080`
+
+*   **Lọc các request cụ thể liên quan đến Fineract API:**
+    `http.request.uri contains "fineract-provider"`
+
+*   **Lọc các request POST (thực hiện nghiệp vụ tạo client/giao dịch):**
+    `http.request.method == "POST" && http.request.uri contains "fineract-provider"`
+
+*   **Lọc gói tin TCP liên quan đến cơ sở dữ liệu PostgreSQL (mặc định cổng 5432):**
+    `tcp.port == 5432`
+
+---
+
+## 2. Capture Filters (Dùng khi bắt đầu capture để giảm dung lượng file PCAP)
+
+Nhập các bộ lọc này trước khi bấm Start Capture:
+
+*   **Chỉ bắt traffic trên cổng API Staging:**
+    `tcp port 8000 or tcp port 8080`
+
+*   **Bắt traffic database và API cùng lúc:**
+    `tcp port 8000 or tcp port 8080 or tcp port 5432`
+
+---
+
+## 3. Lệnh tshark tiện ích (Dành cho Windows Host + Docker Desktop)
+
+### Bước 1: Kiểm tra danh sách card mạng (Interfaces)
+```bash
+tshark -D
+```
+*Mẹo chọn interface:*
+*   **Interface 9 (`NPF_Loopback`)**: Chặn bắt traffic nội bộ từ Windows Client/Burp Suite đến container (Thường dùng nhất).
+*   **Interface 4 (`vEthernet (WSL)`)**: Chặn bắt traffic trao đổi giữa Docker Desktop và WSL2.
+*   **Interface 5 (`Wi-Fi`)**: Chặn bắt traffic kiểm thử từ thiết bị khác trong mạng LAN.
+
+### Bước 2: Chặn bắt trực tiếp HTTP traffic đến cổng 8080 (Loopback):
+```bash
+tshark -i 9 -f "tcp port 8080" -T fields \
+  -e http.request.method \
+  -e http.request.uri \
+  -e http.response.code \
+  -E separator=" | "
+```
+
+### Bước 3: Chạy test request từ một PowerShell/Command Prompt khác để xác định interface bắt được gói tin:
+```powershell
+curl http://localhost:8080/fineract-provider/actuator/health
+```
+
+### Bước 4: Chặn bắt và lưu ra file PCAP để kiểm toán:
+```bash
+tshark -i 9 -f "tcp port 8080" -w capture_fineract.pcap
+```
+
+### Bước 5: Đọc lại file PCAP và lọc thông tin Request & Header Authorization:
+```bash
+tshark -r capture_fineract.pcap -Y "http.request" -T fields \
+  -e frame.time \
+  -e http.request.method \
+  -e http.request.uri \
+  -e http.authorization
+```
+
+
