@@ -1,0 +1,81 @@
+openapi: 3.0.3
+info:
+  title: Fineract Clients API Spec (Reconstructed)
+  description: Reconstructed client onboarding endpoints from captured traffic logs.
+  version: 1.0.0
+servers:
+- url: http://127.0.0.1:8080/fineract-provider/api/v1
+paths:
+  /clients:
+    post:
+      summary: Create new client profile
+      tags:
+      - Clients
+      security:
+      - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - firstname
+              - lastname
+              - officeId
+              - active
+              - activationDate
+              - dateFormat
+              - locale
+              - legalFormId
+              properties:
+                firstname:
+                  type: string
+                  example: Alice
+                lastname:
+                  type: string
+                  example: Smith
+                officeId:
+                  type: integer
+                  example: 1
+                active:
+                  type: boolean
+                  example: true
+                activationDate:
+                  type: string
+                  example: 16 June 2026
+                dateFormat:
+                  type: string
+                  example: dd MMMM yyyy
+                locale:
+                  type: string
+                  example: en
+                legalFormId:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Client created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - officeId
+                - clientId
+                - resourceId
+                properties:
+                  officeId:
+                    type: integer
+                    example: 1
+                  clientId:
+                    type: integer
+                    example: 7
+                  resourceId:
+                    type: integer
+                    example: 7
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
