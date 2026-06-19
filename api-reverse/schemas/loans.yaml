@@ -1,0 +1,236 @@
+openapi: 3.0.3
+info:
+  title: Fineract Loans API Spec (Reconstructed)
+  description: Reconstructed loan products and accounts endpoints from Fineract Swagger
+    specs and Java models (not captured in current PCAP traffic).
+  version: 1.0.0
+servers:
+- url: http://127.0.0.1:8080/fineract-provider/api/v1
+paths:
+  /loans:
+    post:
+      summary: Submit a loan application
+      tags:
+      - Loans
+      security:
+      - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - clientId
+              - productId
+              - principal
+              - loanTermFrequency
+              - loanTermFrequencyType
+              - numberOfRepayments
+              - repaymentEvery
+              - repaymentFrequencyType
+              - interestRatePerPeriod
+              - amortizationType
+              - interestType
+              - interestCalculationPeriodType
+              - expectedDisbursementDate
+              - submittedOnDate
+              - dateFormat
+              - locale
+              properties:
+                clientId:
+                  type: integer
+                  example: 1
+                productId:
+                  type: integer
+                  example: 1
+                principal:
+                  type: number
+                  example: 10000.0
+                loanTermFrequency:
+                  type: integer
+                  example: 12
+                loanTermFrequencyType:
+                  type: integer
+                  example: 2
+                numberOfRepayments:
+                  type: integer
+                  example: 12
+                repaymentEvery:
+                  type: integer
+                  example: 1
+                repaymentFrequencyType:
+                  type: integer
+                  example: 2
+                interestRatePerPeriod:
+                  type: number
+                  example: 1.5
+                amortizationType:
+                  type: integer
+                  example: 1
+                interestType:
+                  type: integer
+                  example: 1
+                interestCalculationPeriodType:
+                  type: integer
+                  example: 1
+                expectedDisbursementDate:
+                  type: string
+                  example: '2026-06-20'
+                submittedOnDate:
+                  type: string
+                  example: '2026-06-16'
+                dateFormat:
+                  type: string
+                  example: yyyy-MM-dd
+                locale:
+                  type: string
+                  example: en
+      responses:
+        '200':
+          description: Loan application submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  officeId:
+                    type: integer
+                    example: 1
+                  clientId:
+                    type: integer
+                    example: 1
+                  loanId:
+                    type: integer
+                    example: 1
+                  resourceId:
+                    type: integer
+                    example: 1
+  /loans/{loanId}:
+    get:
+      summary: Retrieve a loan account details
+      tags:
+      - Loans
+      security:
+      - BasicAuth: []
+      parameters:
+      - name: loanId
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Loan details returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  accountNo:
+                    type: string
+                    example: '000000001'
+                  status:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 300
+                      code:
+                        type: string
+                        example: loanStatusType.active
+                      description:
+                        type: string
+                        example: Active
+                      pendingApproval:
+                        type: boolean
+                        example: false
+                      waitingForDisbursal:
+                        type: boolean
+                        example: false
+                      active:
+                        type: boolean
+                        example: true
+                      closedObligationsMet:
+                        type: boolean
+                        example: false
+                      closedWrittenOff:
+                        type: boolean
+                        example: false
+                      closedRescheduled:
+                        type: boolean
+                        example: false
+                      closed:
+                        type: boolean
+                        example: false
+                      overpaid:
+                        type: boolean
+                        example: false
+                  clientId:
+                    type: integer
+                    example: 1
+                  clientName:
+                    type: string
+                    example: Kampala first Client
+                  clientOfficeId:
+                    type: integer
+                    example: 2
+                  currency:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: UGX
+                      name:
+                        type: string
+                        example: Uganda Shilling
+                      decimalPlaces:
+                        type: integer
+                        example: 2
+                      displaySymbol:
+                        type: string
+                        example: USh
+                      nameCode:
+                        type: string
+                        example: currency.UGX
+                      displayLabel:
+                        type: string
+                        example: Uganda Shilling (USh)
+                  summary:
+                    type: object
+                    properties:
+                      principalDisbursed:
+                        type: number
+                        example: 1000000.0
+                      principalPaid:
+                        type: number
+                        example: 0.0
+                      principalOutstanding:
+                        type: number
+                        example: 1000000.0
+                      interestCharged:
+                        type: number
+                        example: 240000.0
+                      interestPaid:
+                        type: number
+                        example: 0.0
+                      interestOutstanding:
+                        type: number
+                        example: 240000.0
+                      totalExpectedRepayment:
+                        type: number
+                        example: 1258000.0
+                      totalRepayment:
+                        type: number
+                        example: 0.0
+                      totalOutstanding:
+                        type: number
+                        example: 1258000.0
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
