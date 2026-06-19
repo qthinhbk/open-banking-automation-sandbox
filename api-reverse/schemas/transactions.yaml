@@ -1,0 +1,1243 @@
+openapi: 3.0.3
+info:
+  title: Fineract Transactions & Accounts API Spec (Reconstructed)
+  description: Reconstructed savings accounts, deposits, and internal transfers from
+    captured traffic logs.
+  version: 1.0.0
+servers:
+- url: http://127.0.0.1:8080/fineract-provider/api/v1
+paths:
+  /savingsaccounts:
+    post:
+      summary: Submit savings account application
+      tags:
+      - Savings Accounts
+      security:
+      - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - clientId
+              - productId
+              - submittedOnDate
+              - dateFormat
+              - locale
+              properties:
+                clientId:
+                  type: integer
+                  example: 6
+                productId:
+                  type: integer
+                  example: 1
+                submittedOnDate:
+                  type: string
+                  example: 16 June 2026
+                dateFormat:
+                  type: string
+                  example: dd MMMM yyyy
+                locale:
+                  type: string
+                  example: en
+      responses:
+        '200':
+          description: Savings application submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - officeId
+                - clientId
+                - savingsId
+                - resourceId
+                - gsimId
+                properties:
+                  officeId:
+                    type: integer
+                    example: 1
+                  clientId:
+                    type: integer
+                    example: 7
+                  savingsId:
+                    type: integer
+                    example: 7
+                  resourceId:
+                    type: integer
+                    example: 7
+                  gsimId:
+                    type: integer
+                    example: 0
+  /savingsaccounts/{accountId}:
+    post:
+      summary: Approve or activate savings account application
+      tags:
+      - Savings Accounts
+      security:
+      - BasicAuth: []
+      parameters:
+      - name: accountId
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: command
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - approve
+          - activate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+                required:
+                - approvedOnDate
+                - dateFormat
+                - locale
+                properties:
+                  approvedOnDate:
+                    type: string
+                    example: 16 June 2026
+                  dateFormat:
+                    type: string
+                    example: dd MMMM yyyy
+                  locale:
+                    type: string
+                    example: en
+              - type: object
+                required:
+                - activatedOnDate
+                - dateFormat
+                - locale
+                properties:
+                  activatedOnDate:
+                    type: string
+                    example: 16 June 2026
+                  dateFormat:
+                    type: string
+                    example: dd MMMM yyyy
+                  locale:
+                    type: string
+                    example: en
+      responses:
+        '200':
+          description: Command executed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  required:
+                  - officeId
+                  - clientId
+                  - savingsId
+                  - resourceId
+                  - changes
+                  properties:
+                    officeId:
+                      type: integer
+                      example: 1
+                    clientId:
+                      type: integer
+                      example: 6
+                    savingsId:
+                      type: integer
+                      example: 6
+                    resourceId:
+                      type: integer
+                      example: 6
+                    changes:
+                      type: object
+                      properties:
+                        status:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            code:
+                              type: string
+                            value:
+                              type: string
+                            submittedAndPendingApproval:
+                              type: boolean
+                            approved:
+                              type: boolean
+                            rejected:
+                              type: boolean
+                            withdrawnByApplicant:
+                              type: boolean
+                            active:
+                              type: boolean
+                            closed:
+                              type: boolean
+                            prematureClosed:
+                              type: boolean
+                            transferInProgress:
+                              type: boolean
+                            transferOnHold:
+                              type: boolean
+                            matured:
+                              type: boolean
+                        locale:
+                          type: string
+                        dateFormat:
+                          type: string
+                        approvedOnDate:
+                          type: string
+                - type: object
+                  required:
+                  - officeId
+                  - clientId
+                  - savingsId
+                  - resourceId
+                  - changes
+                  properties:
+                    officeId:
+                      type: integer
+                      example: 1
+                    clientId:
+                      type: integer
+                      example: 6
+                    savingsId:
+                      type: integer
+                      example: 6
+                    resourceId:
+                      type: integer
+                      example: 6
+                    changes:
+                      type: object
+                      properties:
+                        status:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            code:
+                              type: string
+                            value:
+                              type: string
+                            submittedAndPendingApproval:
+                              type: boolean
+                            approved:
+                              type: boolean
+                            rejected:
+                              type: boolean
+                            withdrawnByApplicant:
+                              type: boolean
+                            active:
+                              type: boolean
+                            closed:
+                              type: boolean
+                            prematureClosed:
+                              type: boolean
+                            transferInProgress:
+                              type: boolean
+                            transferOnHold:
+                              type: boolean
+                            matured:
+                              type: boolean
+                        locale:
+                          type: string
+                        dateFormat:
+                          type: string
+                        activatedOnDate:
+                          type: string
+    get:
+      summary: Retrieve savings account details and transactions
+      tags:
+      - Savings Accounts
+      security:
+      - BasicAuth: []
+      parameters:
+      - name: accountId
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: associations
+        in: query
+        required: false
+        schema:
+          type: string
+          example: transactions
+      responses:
+        '200':
+          description: Savings details returned
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - accountNo
+                - depositType
+                - clientId
+                - clientName
+                - savingsProductId
+                - savingsProductName
+                - fieldOfficerId
+                - status
+                - subStatus
+                - timeline
+                - currency
+                - nominalAnnualInterestRate
+                - interestCompoundingPeriodType
+                - interestPostingPeriodType
+                - interestCalculationType
+                - interestCalculationDaysInYearType
+                - withdrawalFeeForTransfers
+                - allowOverdraft
+                - enforceMinRequiredBalance
+                - lienAllowed
+                - withHoldTax
+                - lastActiveTransactionDate
+                - isDormancyTrackingActive
+                - summary
+                - transactions
+                - depositTypeId
+                - newSavingsAccountTransactionData
+                - savingsAccountTransactionData
+                - interestPostingPeriodTypeId
+                - interestCompoundingPeriodTypeId
+                - existingReversedTransactionIds
+                - activationLocalDate
+                - interestCalculationTypeId
+                - existingTransactionIds
+                - interestCalculationDaysInYearTypeId
+                - startInterestCalculationDate
+                - cashBasedAccountingEnabledOnSavingsProduct
+                - accrualBasedAccountingEnabledOnSavingsProduct
+                - savingsAccountTransactionsWithPivotConfig
+                properties:
+                  id:
+                    type: integer
+                    example: 7
+                  accountNo:
+                    type: string
+                    example: '000000007'
+                  depositType:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      code:
+                        type: string
+                      value:
+                        type: string
+                  clientId:
+                    type: integer
+                    example: 7
+                  clientName:
+                    type: string
+                    example: Bob Jones
+                  savingsProductId:
+                    type: integer
+                    example: 1
+                  savingsProductName:
+                    type: string
+                    example: Standard Savings
+                  fieldOfficerId:
+                    type: integer
+                    example: 0
+                  status:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      code:
+                        type: string
+                      value:
+                        type: string
+                      submittedAndPendingApproval:
+                        type: boolean
+                      approved:
+                        type: boolean
+                      rejected:
+                        type: boolean
+                      withdrawnByApplicant:
+                        type: boolean
+                      active:
+                        type: boolean
+                      closed:
+                        type: boolean
+                      prematureClosed:
+                        type: boolean
+                      transferInProgress:
+                        type: boolean
+                      transferOnHold:
+                        type: boolean
+                      matured:
+                        type: boolean
+                  subStatus:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      code:
+                        type: string
+                      value:
+                        type: string
+                      none:
+                        type: boolean
+                      inactive:
+                        type: boolean
+                      dormant:
+                        type: boolean
+                      escheat:
+                        type: boolean
+                      block:
+                        type: boolean
+                      blockCredit:
+                        type: boolean
+                      blockDebit:
+                        type: boolean
+                  timeline:
+                    type: object
+                    properties:
+                      submittedOnDate:
+                        type: array
+                        items:
+                          type: integer
+                      submittedByUsername:
+                        type: string
+                      submittedByFirstname:
+                        type: string
+                      submittedByLastname:
+                        type: string
+                      approvedOnDate:
+                        type: array
+                        items:
+                          type: integer
+                      approvedByUsername:
+                        type: string
+                      approvedByFirstname:
+                        type: string
+                      approvedByLastname:
+                        type: string
+                      activatedOnDate:
+                        type: array
+                        items:
+                          type: integer
+                      activatedByUsername:
+                        type: string
+                      activatedByFirstname:
+                        type: string
+                      activatedByLastname:
+                        type: string
+                  currency:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      name:
+                        type: string
+                      decimalPlaces:
+                        type: integer
+                      inMultiplesOf:
+                        type: integer
+                      displaySymbol:
+                        type: string
+                      nameCode:
+                        type: string
+                      displayLabel:
+                        type: string
+                  nominalAnnualInterestRate:
+                    type: number
+                    example: 5.0
+                  interestCompoundingPeriodType:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      code:
+                        type: string
+                      value:
+                        type: string
+                  interestPostingPeriodType:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      code:
+                        type: string
+                      value:
+                        type: string
+                  interestCalculationType:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      code:
+                        type: string
+                      value:
+                        type: string
+                  interestCalculationDaysInYearType:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      code:
+                        type: string
+                      value:
+                        type: string
+                  withdrawalFeeForTransfers:
+                    type: boolean
+                    example: false
+                  allowOverdraft:
+                    type: boolean
+                    example: false
+                  enforceMinRequiredBalance:
+                    type: boolean
+                    example: false
+                  lienAllowed:
+                    type: boolean
+                    example: false
+                  withHoldTax:
+                    type: boolean
+                    example: false
+                  lastActiveTransactionDate:
+                    type: array
+                    items:
+                      type: integer
+                    example:
+                    - 2026
+                    - 6
+                    - 16
+                  isDormancyTrackingActive:
+                    type: boolean
+                    example: false
+                  summary:
+                    type: object
+                    properties:
+                      currency:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                          name:
+                            type: string
+                          decimalPlaces:
+                            type: integer
+                          inMultiplesOf:
+                            type: integer
+                          displaySymbol:
+                            type: string
+                          nameCode:
+                            type: string
+                          displayLabel:
+                            type: string
+                      totalDeposits:
+                        type: number
+                      totalInterestEarned:
+                        type: number
+                      totalInterestPosted:
+                        type: integer
+                      accountBalance:
+                        type: number
+                      totalOverdraftInterestDerived:
+                        type: integer
+                      interestNotPosted:
+                        type: number
+                      lastInterestCalculationDate:
+                        type: array
+                        items:
+                          type: integer
+                      availableBalance:
+                        type: number
+                      runningBalanceOnInterestPostingTillDate:
+                        type: integer
+                      runningBalanceOnPivotDate:
+                        type: integer
+                  transactions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        transactionType:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            code:
+                              type: string
+                            value:
+                              type: string
+                            deposit:
+                              type: boolean
+                            dividendPayout:
+                              type: boolean
+                            withdrawal:
+                              type: boolean
+                            interestPosting:
+                              type: boolean
+                            feeDeduction:
+                              type: boolean
+                            initiateTransfer:
+                              type: boolean
+                            approveTransfer:
+                              type: boolean
+                            withdrawTransfer:
+                              type: boolean
+                            rejectTransfer:
+                              type: boolean
+                            overdraftInterest:
+                              type: boolean
+                            writtenoff:
+                              type: boolean
+                            overdraftFee:
+                              type: boolean
+                            withholdTax:
+                              type: boolean
+                            escheat:
+                              type: boolean
+                            amountHold:
+                              type: boolean
+                            amountRelease:
+                              type: boolean
+                            accrual:
+                              type: boolean
+                            depositOrWithdrawal:
+                              type: boolean
+                            transactionTypeEnum:
+                              type: string
+                            overDraftInterestPosting:
+                              type: boolean
+                            incomeFromInterest:
+                              type: boolean
+                            debit:
+                              type: boolean
+                            payCharge:
+                              type: boolean
+                            chargeTransaction:
+                              type: boolean
+                            withdrawalFee:
+                              type: boolean
+                            annualFee:
+                              type: boolean
+                            credit:
+                              type: boolean
+                            entryType:
+                              type: string
+                        externalId:
+                          type: string
+                        currency:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                            name:
+                              type: string
+                            decimalPlaces:
+                              type: integer
+                            inMultiplesOf:
+                              type: integer
+                            displaySymbol:
+                              type: string
+                            nameCode:
+                              type: string
+                            displayLabel:
+                              type: string
+                        amount:
+                          type: number
+                        runningBalance:
+                          type: number
+                        reversed:
+                          type: boolean
+                        transfer:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            reversed:
+                              type: boolean
+                            currency:
+                              type: object
+                              properties:
+                                code:
+                                  type: string
+                                name:
+                                  type: string
+                                decimalPlaces:
+                                  type: integer
+                                inMultiplesOf:
+                                  type: integer
+                                displaySymbol:
+                                  type: string
+                                nameCode:
+                                  type: string
+                                displayLabel:
+                                  type: string
+                            transferAmount:
+                              type: number
+                            transferDate:
+                              type: string
+                            transferDescription:
+                              type: string
+                        submittedOnDate:
+                          type: array
+                          items:
+                            type: integer
+                        interestedPostedAsOn:
+                          type: boolean
+                        submittedByUsername:
+                          type: string
+                        isReversal:
+                          type: boolean
+                        originalTransactionId:
+                          type: integer
+                        isManualTransaction:
+                          type: boolean
+                        lienTransaction:
+                          type: boolean
+                        releaseTransactionId:
+                          type: integer
+                        isOverdraft:
+                          type: boolean
+                        entryType:
+                          type: string
+                        accountId:
+                          type: integer
+                        accountNo:
+                          type: string
+                        date:
+                          type: array
+                          items:
+                            type: integer
+                        chargesPaidByData:
+                          type: array
+                          items:
+                            type: string
+                        waiveFeeCharge:
+                          type: boolean
+                        waivePenaltyCharge:
+                          type: boolean
+                        chargeTransactionAndNotReversed:
+                          type: boolean
+                        debit:
+                          type: boolean
+                        payCharge:
+                          type: boolean
+                        amountOnHold:
+                          type: boolean
+                        chargeTransaction:
+                          type: boolean
+                        interestPosting:
+                          type: boolean
+                        manualTransaction:
+                          type: boolean
+                        reversalTransaction:
+                          type: boolean
+                        savingsAccountChargesPaid:
+                          type: array
+                          items:
+                            type: string
+                        interestPostingAndNotReversed:
+                          type: boolean
+                        overdraftInterestAndNotReversed:
+                          type: boolean
+                        notReversed:
+                          type: boolean
+                        penaltyCharge:
+                          type: boolean
+                        waiveCharge:
+                          type: boolean
+                        dividendPayoutAndNotReversed:
+                          type: boolean
+                        depositAndNotReversed:
+                          type: boolean
+                        annualFeeAndNotReversed:
+                          type: boolean
+                        withdrawalFeeAndNotReversed:
+                          type: boolean
+                        waiveFeeChargeAndNotReversed:
+                          type: boolean
+                        penaltyChargeAndNotReversed:
+                          type: boolean
+                        waivePenaltyChargeAndNotReversed:
+                          type: boolean
+                        feeChargeAndNotReversed:
+                          type: boolean
+                        withHoldTaxAndNotReversed:
+                          type: boolean
+                        annualFee:
+                          type: boolean
+                        taxDetails:
+                          type: array
+                          items:
+                            type: string
+                        amountRelease:
+                          type: boolean
+                        feeCharge:
+                          type: boolean
+                        credit:
+                          type: boolean
+                        accrual:
+                          type: boolean
+                        withdrawal:
+                          type: boolean
+                        deposit:
+                          type: boolean
+                  depositTypeId:
+                    type: integer
+                    example: 100
+                  newSavingsAccountTransactionData:
+                    type: array
+                    items:
+                      type: string
+                  savingsAccountTransactionData:
+                    type: array
+                    items:
+                      type: string
+                  interestPostingPeriodTypeId:
+                    type: integer
+                    example: 4
+                  interestCompoundingPeriodTypeId:
+                    type: integer
+                    example: 1
+                  existingReversedTransactionIds:
+                    type: array
+                    items:
+                      type: string
+                  activationLocalDate:
+                    type: array
+                    items:
+                      type: integer
+                    example:
+                    - 2026
+                    - 6
+                    - 16
+                  interestCalculationTypeId:
+                    type: integer
+                    example: 1
+                  existingTransactionIds:
+                    type: array
+                    items:
+                      type: string
+                  interestCalculationDaysInYearTypeId:
+                    type: integer
+                    example: 365
+                  startInterestCalculationDate:
+                    type: array
+                    items:
+                      type: integer
+                    example:
+                    - 2026
+                    - 6
+                    - 16
+                  cashBasedAccountingEnabledOnSavingsProduct:
+                    type: boolean
+                    example: false
+                  accrualBasedAccountingEnabledOnSavingsProduct:
+                    type: boolean
+                    example: false
+                  savingsAccountTransactionsWithPivotConfig:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        transactionType:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            code:
+                              type: string
+                            value:
+                              type: string
+                            deposit:
+                              type: boolean
+                            dividendPayout:
+                              type: boolean
+                            withdrawal:
+                              type: boolean
+                            interestPosting:
+                              type: boolean
+                            feeDeduction:
+                              type: boolean
+                            initiateTransfer:
+                              type: boolean
+                            approveTransfer:
+                              type: boolean
+                            withdrawTransfer:
+                              type: boolean
+                            rejectTransfer:
+                              type: boolean
+                            overdraftInterest:
+                              type: boolean
+                            writtenoff:
+                              type: boolean
+                            overdraftFee:
+                              type: boolean
+                            withholdTax:
+                              type: boolean
+                            escheat:
+                              type: boolean
+                            amountHold:
+                              type: boolean
+                            amountRelease:
+                              type: boolean
+                            accrual:
+                              type: boolean
+                            depositOrWithdrawal:
+                              type: boolean
+                            transactionTypeEnum:
+                              type: string
+                            overDraftInterestPosting:
+                              type: boolean
+                            incomeFromInterest:
+                              type: boolean
+                            debit:
+                              type: boolean
+                            payCharge:
+                              type: boolean
+                            chargeTransaction:
+                              type: boolean
+                            withdrawalFee:
+                              type: boolean
+                            annualFee:
+                              type: boolean
+                            credit:
+                              type: boolean
+                            entryType:
+                              type: string
+                        externalId:
+                          type: string
+                        currency:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                            name:
+                              type: string
+                            decimalPlaces:
+                              type: integer
+                            inMultiplesOf:
+                              type: integer
+                            displaySymbol:
+                              type: string
+                            nameCode:
+                              type: string
+                            displayLabel:
+                              type: string
+                        amount:
+                          type: number
+                        runningBalance:
+                          type: number
+                        reversed:
+                          type: boolean
+                        transfer:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            reversed:
+                              type: boolean
+                            currency:
+                              type: object
+                              properties:
+                                code:
+                                  type: string
+                                name:
+                                  type: string
+                                decimalPlaces:
+                                  type: integer
+                                inMultiplesOf:
+                                  type: integer
+                                displaySymbol:
+                                  type: string
+                                nameCode:
+                                  type: string
+                                displayLabel:
+                                  type: string
+                            transferAmount:
+                              type: number
+                            transferDate:
+                              type: string
+                            transferDescription:
+                              type: string
+                        submittedOnDate:
+                          type: array
+                          items:
+                            type: integer
+                        interestedPostedAsOn:
+                          type: boolean
+                        submittedByUsername:
+                          type: string
+                        isReversal:
+                          type: boolean
+                        originalTransactionId:
+                          type: integer
+                        isManualTransaction:
+                          type: boolean
+                        lienTransaction:
+                          type: boolean
+                        releaseTransactionId:
+                          type: integer
+                        isOverdraft:
+                          type: boolean
+                        entryType:
+                          type: string
+                        accountId:
+                          type: integer
+                        accountNo:
+                          type: string
+                        date:
+                          type: array
+                          items:
+                            type: integer
+                        chargesPaidByData:
+                          type: array
+                          items:
+                            type: string
+                        waiveFeeCharge:
+                          type: boolean
+                        waivePenaltyCharge:
+                          type: boolean
+                        chargeTransactionAndNotReversed:
+                          type: boolean
+                        debit:
+                          type: boolean
+                        payCharge:
+                          type: boolean
+                        amountOnHold:
+                          type: boolean
+                        chargeTransaction:
+                          type: boolean
+                        interestPosting:
+                          type: boolean
+                        manualTransaction:
+                          type: boolean
+                        reversalTransaction:
+                          type: boolean
+                        savingsAccountChargesPaid:
+                          type: array
+                          items:
+                            type: string
+                        interestPostingAndNotReversed:
+                          type: boolean
+                        overdraftInterestAndNotReversed:
+                          type: boolean
+                        notReversed:
+                          type: boolean
+                        penaltyCharge:
+                          type: boolean
+                        waiveCharge:
+                          type: boolean
+                        dividendPayoutAndNotReversed:
+                          type: boolean
+                        depositAndNotReversed:
+                          type: boolean
+                        annualFeeAndNotReversed:
+                          type: boolean
+                        withdrawalFeeAndNotReversed:
+                          type: boolean
+                        waiveFeeChargeAndNotReversed:
+                          type: boolean
+                        penaltyChargeAndNotReversed:
+                          type: boolean
+                        waivePenaltyChargeAndNotReversed:
+                          type: boolean
+                        feeChargeAndNotReversed:
+                          type: boolean
+                        withHoldTaxAndNotReversed:
+                          type: boolean
+                        annualFee:
+                          type: boolean
+                        taxDetails:
+                          type: array
+                          items:
+                            type: string
+                        amountRelease:
+                          type: boolean
+                        feeCharge:
+                          type: boolean
+                        credit:
+                          type: boolean
+                        accrual:
+                          type: boolean
+                        withdrawal:
+                          type: boolean
+                        deposit:
+                          type: boolean
+  /savingsaccounts/{accountId}/transactions:
+    post:
+      summary: Post a savings account transaction
+      tags:
+      - Transactions
+      security:
+      - BasicAuth: []
+      parameters:
+      - name: accountId
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: command
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - deposit
+          - withdrawal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - locale
+              - dateFormat
+              - transactionDate
+              - transactionAmount
+              - paymentTypeId
+              properties:
+                locale:
+                  type: string
+                  example: en
+                dateFormat:
+                  type: string
+                  example: dd MMMM yyyy
+                transactionDate:
+                  type: string
+                  example: 16 June 2026
+                transactionAmount:
+                  type: number
+                  example: 1000.0
+                paymentTypeId:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Transaction posted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - officeId
+                - clientId
+                - savingsId
+                - resourceId
+                - changes
+                properties:
+                  officeId:
+                    type: integer
+                    example: 1
+                  clientId:
+                    type: integer
+                    example: 6
+                  savingsId:
+                    type: integer
+                    example: 6
+                  resourceId:
+                    type: integer
+                    example: 8
+                  changes:
+                    type: object
+                    properties:
+                      paymentTypeId:
+                        type: integer
+  /accounttransfers:
+    post:
+      summary: Create internal fund transfer
+      tags:
+      - Account Transfers
+      security:
+      - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - fromOfficeId
+              - fromClientId
+              - fromAccountType
+              - fromAccountId
+              - toOfficeId
+              - toClientId
+              - toAccountType
+              - toAccountId
+              - transferDate
+              - transferAmount
+              - transferDescription
+              - locale
+              - dateFormat
+              properties:
+                fromOfficeId:
+                  type: integer
+                  example: 1
+                fromClientId:
+                  type: integer
+                  example: 6
+                fromAccountType:
+                  type: integer
+                  example: 2
+                fromAccountId:
+                  type: integer
+                  example: 6
+                toOfficeId:
+                  type: integer
+                  example: 1
+                toClientId:
+                  type: integer
+                  example: 7
+                toAccountType:
+                  type: integer
+                  example: 2
+                toAccountId:
+                  type: integer
+                  example: 7
+                transferDate:
+                  type: string
+                  example: 16 June 2026
+                transferAmount:
+                  type: number
+                  example: 250.0
+                transferDescription:
+                  type: string
+                  example: Alice to Bob sandbox transfer
+                locale:
+                  type: string
+                  example: en
+                dateFormat:
+                  type: string
+                  example: dd MMMM yyyy
+      responses:
+        '200':
+          description: Transfer completed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - savingsId
+                - resourceId
+                properties:
+                  savingsId:
+                    type: integer
+                    example: 6
+                  resourceId:
+                    type: integer
+                    example: 3
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
