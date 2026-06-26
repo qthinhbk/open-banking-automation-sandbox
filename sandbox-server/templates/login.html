@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Bank - Secure Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(20, 30, 50, 0.45);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary-glow: rgba(0, 102, 255, 0.15);
+            --accent-blue: #0070f3;
+            --accent-cyan: #00dfd8;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Abstract Glow Effects */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--accent-blue) 0%, transparent 70%);
+            top: -100px;
+            left: -100px;
+            opacity: 0.35;
+            filter: blur(80px);
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%);
+            bottom: -150px;
+            right: -150px;
+            opacity: 0.25;
+            filter: blur(100px);
+            z-index: 0;
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem;
+            border-radius: 24px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-section h1 {
+            font-weight: 800;
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-section p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border-radius: 12px;
+            background: rgba(10, 15, 30, 0.6);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 12px rgba(0, 112, 243, 0.25);
+            background: rgba(10, 15, 30, 0.8);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #0051a8 100%);
+            border: none;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 112, 243, 0.3);
+            margin-top: 1rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 112, 243, 0.45);
+            filter: brightness(1.1);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: #ff4a5a;
+            font-size: 0.85rem;
+            margin-top: 0.75rem;
+            text-align: center;
+            display: none;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        /* OTP State Styles */
+        .otp-container {
+            display: none;
+        }
+
+        .otp-digits {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .otp-input {
+            width: 100%;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            border-radius: 12px;
+            background: rgba(10, 15, 30, 0.6);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .otp-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 223, 216, 0.25);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container" id="login-box">
+        <div class="logo-section">
+            <h1 id="main-title">APEX BANK</h1>
+            <p id="main-subtitle">Corporate Internet Banking Platform</p>
+        </div>
+
+        <!-- Credentials Form -->
+        <form id="credentials-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" class="form-input" placeholder="e.g. demo_user" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn-submit" id="btn-login">Verify Credentials</button>
+            <div class="error-message" id="cred-error">Invalid username or password.</div>
+        </form>
+
+        <!-- OTP Verify Form -->
+        <form id="otp-form" class="otp-container" onsubmit="handleOtp(event)">
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                A security token was sent to your authentication device. Please enter the 6-digit code.
+            </p>
+            <div class="otp-digits">
+                <input type="text" maxlength="6" id="otp-code" class="otp-input" placeholder="123456" pattern="[0-9]{6}" required autocomplete="one-time-code">
+            </div>
+            <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, var(--accent-cyan) 0%, #00a19c 100%); box-shadow: 0 4px 15px rgba(0, 223, 216, 0.3);" id="btn-otp">Authorize Session</button>
+            <div class="error-message" id="otp-error">Invalid or expired OTP. Please try again.</div>
+        </form>
+    </div>
+
+    <script>
+        let cachedOtpToken = "";
+        let username = "";
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const userVal = document.getElementById("username").value;
+            const passVal = document.getElementById("password").value;
+            const errorDiv = document.getElementById("cred-error");
+            
+            errorDiv.style.display = "none";
+
+            try {
+                const response = await fetch("/api/v1/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: userVal, password: passVal })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.requires_otp) {
+                        username = userVal;
+                        cachedOtpToken = data.otp_token;
+                        
+                        // Transition to OTP screen
+                        document.getElementById("credentials-form").style.display = "none";
+                        document.getElementById("otp-form").style.display = "block";
+                        document.getElementById("main-title").innerText = "SECURITY TOKEN";
+                        document.getElementById("main-subtitle").innerText = "Session Verification Required";
+                    }
+                } else {
+                    errorDiv.style.display = "block";
+                }
+            } catch (err) {
+                errorDiv.style.display = "block";
+            }
+        }
+
+        async function handleOtp(e) {
+            e.preventDefault();
+            const otpCode = document.getElementById("otp-code").value;
+            const errorDiv = document.getElementById("otp-error");
+            errorDiv.style.display = "none";
+
+            try {
+                const response = await fetch("/api/v1/auth/verify-otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: username,
+                        otp_token: cachedOtpToken,
+                        otp_code: otpCode
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem("access_token", data.access_token);
+                    localStorage.setItem("username", username);
+                    window.location.href = "/dashboard";
+                } else {
+                    errorDiv.style.display = "block";
+                }
+            } catch (err) {
+                errorDiv.style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>

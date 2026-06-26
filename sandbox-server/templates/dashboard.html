@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Bank - Executive Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #080b11;
+            --sidebar-bg: #0e131f;
+            --card-bg: rgba(18, 26, 44, 0.6);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --accent-blue: #0070f3;
+            --accent-cyan: #00dfd8;
+            --text-main: #f3f4f6;
+            --text-muted: #8e9cae;
+            --success-color: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar navigation */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 40%, #00dfd8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.9rem 1.2rem;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(0, 112, 243, 0.15);
+            color: var(--text-main);
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 0.9rem 1.2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Main Workspace Content */
+        .workspace {
+            flex-grow: 1;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-title h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .welcome-title p {
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .user-badge {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Cards Grid */
+        .accounts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .account-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.8rem;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .account-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 112, 243, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .account-card.selected {
+            border-color: var(--accent-blue);
+            background: rgba(0, 112, 243, 0.05);
+            box-shadow: 0 10px 25px rgba(0, 112, 243, 0.1);
+        }
+
+        .account-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(0, 112, 243, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .card-type {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .card-number {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .card-balance {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-top: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 60%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Transactions & Transfer Form Split Layout */
+        .content-split {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .content-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.8rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Transactions list */
+        .transactions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .transactions-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .transactions-list::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(10, 15, 30, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .transaction-item:hover {
+            border-color: rgba(255,255,255,0.12);
+            background: rgba(10, 15, 30, 0.6);
+        }
+
+        .tx-info h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .tx-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .tx-amount {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .tx-amount.debit {
+            color: #ef4444;
+        }
+
+        .tx-amount.credit {
+            color: var(--success-color);
+        }
+
+        /* Transfer Form */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.85rem 1.1rem;
+            border-radius: 12px;
+            background: rgba(10, 15, 30, 0.5);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 12px rgba(0, 112, 243, 0.15);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.9rem;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #0056ba 100%);
+            border: none;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 112, 243, 0.2);
+            margin-top: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 112, 243, 0.35);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: #10b981;
+            color: #ffffff;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            display: none;
+            animation: slideUp 0.3s ease-out;
+            z-index: 100;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .alert-error {
+            color: #ff4a5a;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="brand">APEX BANK</div>
+        <ul class="nav-links">
+            <li><a href="#" class="nav-link active">Dashboard</a></li>
+            <li><a href="#" class="nav-link">Payments</a></li>
+            <li><a href="#" class="nav-link">Analytics</a></li>
+            <li><a href="#" class="nav-link">Settings</a></li>
+        </ul>
+        <div class="logout-btn" onclick="logout()">Logout</div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+        <div class="header">
+            <div class="welcome-title">
+                <h2>Corporate Accounts</h2>
+                <p>Real-time transaction activities & transfers</p>
+            </div>
+            <div class="user-badge" id="username-badge">demo_user</div>
+        </div>
+
+        <!-- Accounts Overview -->
+        <div class="accounts-grid" id="accounts-container">
+            <!-- Dynamic Accounts Insertion -->
+        </div>
+
+        <!-- Split Content: Transactions and Wire Transfer -->
+        <div class="content-split">
+            <!-- Transactions Section -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span>Recent Transactions</span>
+                    <span style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600;" id="active-acc-label">No Account Selected</span>
+                </div>
+                <div class="transactions-list" id="transactions-container">
+                    <p style="text-align: center; color: var(--text-muted); margin-top: 3rem;">Select an account to view details</p>
+                </div>
+            </div>
+
+            <!-- Money Transfer Section -->
+            <div class="section-card">
+                <div class="section-title">Initiate Transfer</div>
+                <form id="transfer-form" onsubmit="handleTransfer(event)">
+                    <div class="form-group">
+                        <label for="src-account">From Account</label>
+                        <select id="src-account" class="form-input" required>
+                            <!-- Dynamic Account Select Options -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dest-account">To Account (Beneficiary)</label>
+                        <input type="text" id="dest-account" class="form-input" placeholder="e.g. 98765432109" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">Amount (USD)</label>
+                        <input type="number" id="amount" class="form-input" placeholder="0.00" step="0.01" min="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="desc">Reference Description</label>
+                        <input type="text" id="desc" class="form-input" placeholder="e.g. Invoice payment" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Confirm Wire Transfer</button>
+                    <div class="alert-error" id="transfer-error">Transfer failed. Please check balance.</div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast Notification -->
+    <div class="toast" id="success-toast">Transfer Processed Successfully!</div>
+
+    <script>
+        let accounts = [];
+        let selectedAccount = "";
+
+        // Auto redirect if token is missing
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+            window.location.href = "/";
+        }
+
+        // Set username in header
+        document.getElementById("username-badge").innerText = localStorage.getItem("username") || "demo_user";
+
+        async function fetchAccounts() {
+            try {
+                const res = await fetch("/api/v1/accounts/summary", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (res.status === 401) {
+                    logout();
+                    return;
+                }
+                const data = await res.json();
+                accounts = data.accounts;
+                renderAccounts();
+            } catch (err) {
+                console.error("Failed to load accounts", err);
+            }
+        }
+
+        function renderAccounts() {
+            const container = document.getElementById("accounts-container");
+            const select = document.getElementById("src-account");
+            
+            container.innerHTML = "";
+            select.innerHTML = "";
+
+            accounts.forEach((acc, idx) => {
+                // Select first account by default if not set
+                if (!selectedAccount && idx === 0) {
+                    selectedAccount = acc.account_number;
+                    document.getElementById("active-acc-label").innerText = `Acc: ${selectedAccount}`;
+                    fetchTransactions(selectedAccount);
+                }
+
+                const card = document.createElement("div");
+                card.className = `account-card ${selectedAccount === acc.account_number ? 'selected' : ''}`;
+                card.onclick = () => selectAcc(acc.account_number);
+                card.innerHTML = `
+                    <div class="card-type">${acc.account_type}</div>
+                    <div class="card-number">•••• ${acc.account_number.slice(-4)}</div>
+                    <div class="card-balance">$${acc.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                `;
+                container.appendChild(card);
+
+                const option = document.createElement("option");
+                option.value = acc.account_number;
+                option.innerText = `${acc.account_type} (•••• ${acc.account_number.slice(-4)})`;
+                select.appendChild(option);
+            });
+
+            if (selectedAccount) {
+                select.value = selectedAccount;
+            }
+        }
+
+        function selectAcc(accNum) {
+            selectedAccount = accNum;
+            document.getElementById("active-acc-label").innerText = `Acc: ${selectedAccount}`;
+            renderAccounts();
+            fetchTransactions(accNum);
+        }
+
+        async function fetchTransactions(accNum) {
+            const txContainer = document.getElementById("transactions-container");
+            txContainer.innerHTML = `<p style="text-align: center; color: var(--text-muted); margin-top: 3rem;">Loading records...</p>`;
+            
+            try {
+                const res = await fetch(`/api/v1/accounts/transactions?account_number=${accNum}`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await res.json();
+                renderTransactions(data.transactions);
+            } catch (err) {
+                txContainer.innerHTML = `<p style="text-align: center; color: #ff4a5a; margin-top: 3rem;">Failed to fetch records.</p>`;
+            }
+        }
+
+        function renderTransactions(transactions) {
+            const txContainer = document.getElementById("transactions-container");
+            txContainer.innerHTML = "";
+
+            if (transactions.length === 0) {
+                txContainer.innerHTML = `<p style="text-align: center; color: var(--text-muted); margin-top: 3rem;">No transactions recorded</p>`;
+                return;
+            }
+
+            transactions.forEach(tx => {
+                const isDebit = tx.amount < 0;
+                const amtClass = isDebit ? 'debit' : 'credit';
+                const prefix = isDebit ? '-' : '+';
+                const formattedAmt = `$${Math.abs(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+
+                const item = document.createElement("div");
+                item.className = "transaction-item";
+                item.innerHTML = `
+                    <div class="tx-info">
+                        <h4>${tx.description}</h4>
+                        <p>${new Date(tx.date).toLocaleDateString()} ${new Date(tx.date).toLocaleTimeString()}</p>
+                    </div>
+                    <div class="tx-amount ${amtClass}">${prefix}${formattedAmt}</div>
+                `;
+                txContainer.appendChild(item);
+            });
+        }
+
+        async function handleTransfer(e) {
+            e.preventDefault();
+            const src = document.getElementById("src-account").value;
+            const dest = document.getElementById("dest-account").value;
+            const amt = parseFloat(document.getElementById("amount").value);
+            const desc = document.getElementById("desc").value;
+            const errorDiv = document.getElementById("transfer-error");
+            
+            errorDiv.style.display = "none";
+
+            try {
+                const response = await fetch("/api/v1/transfers/initiate", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        source_account: src,
+                        destination_account: dest,
+                        amount: amt,
+                        description: desc
+                    })
+                });
+
+                if (response.ok) {
+                    showToast();
+                    document.getElementById("amount").value = "";
+                    document.getElementById("desc").value = "";
+                    
+                    // Refresh data
+                    await fetchAccounts();
+                } else {
+                    const data = await response.json();
+                    errorDiv.innerText = data.detail || "Transfer failed. Please check funds and destination.";
+                    errorDiv.style.display = "block";
+                }
+            } catch (err) {
+                errorDiv.innerText = "Connection error. Please try again.";
+                errorDiv.style.display = "block";
+            }
+        }
+
+        function showToast() {
+            const toast = document.getElementById("success-toast");
+            toast.style.display = "block";
+            setTimeout(() => {
+                toast.style.display = "none";
+            }, 3000);
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "/";
+        }
+
+        // Initial Load
+        fetchAccounts();
+    </script>
+</body>
+</html>
